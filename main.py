@@ -1,3 +1,4 @@
+"""
 cc=""
 nombre=""
 email=""
@@ -9,83 +10,78 @@ departamento=""
 ciudad=""
 saldo=0.0
 clientes = {}
-clientes[cc] = {
-        "nombre": nombre,
-        "email": email,
-        "edad": edad,
-        "contacto": {"movil": movil, "fijo": fijo},
-        "ubicacion": {"pais": pais, "departamento": departamento, "ciudad": ciudad},
-        "cuentas": {},      # diccionario vacío para cuentas
-        "creditos": {},      # diccionario vacío para créditos
-        "saldo":saldo
-    }
+"""
+clientes = {}  # Diccionario vacío al inicio
 
 def crear_cliente():
     cc = input("Ingrese número de cédula: ")
     if cc in clientes:
         print("Cliente ya existe.")
-    else:
-        nombre = input ("Nombre completo: ")
+        return  # Evitar sobreescribir
 
-        email = input("Email: ")
+    nombre = input("Nombre completo: ")
+    email = input("Email: ")
+    edad = int(input("Edad: "))
+    movil = input("Contacto móvil: ")
+    fijo = input("Contacto fijo: ")
+    pais = input("País: ")
+    departamento = input("Departamento: ")
+    ciudad = input("Ciudad: ")
 
-        edad = int(input ("Edad: "))
-
-        movil = input ("Contacto móvil: ")
-
-        fijo = input ("Contacto fijo: ")
-
-        pais = input ("País: ")
-
-        departamento = input ("Departamento: ")
-
-        ciudad = input ("Ciudad: ")
-
-    clientes [cc] = {
-    "nombre": nombre,
-    "email": email,
-    "edad": edad,
-    "contacto": {"movil": movil, "fijo": fijo},
-    "ubicacion": {"pais": pais, "departamento": departamento, "ciudad": ciudad},
+    clientes[cc] = {
+        "nombre": nombre,
+        "email": email,
+        "edad": edad,
+        "contacto": {"movil": movil, "fijo": fijo},
+        "ubicacion": {"pais": pais, "departamento": departamento, "ciudad": ciudad},
+        "cuentas": {},  # Aquí se guardan todas las cuentas con sus saldos
+        "creditos": {}
     }
+
     print(f"El cliente {nombre} creado exitosamente.")
 
 def depositar_dinero():
-    cc = input ("Ingrese número de cédula del cliente: ")
+    cc = input("Ingrese número de cédula del cliente: ")
     if cc not in clientes:
         print("Cliente no encontrado.")
-       
-    monto= float(input("Ingrese monto a depositar: "))
+        return
 
-    if "saldo" not in clientes[cc]:
-        clientes[cc]["saldo"] = 0.0
+    cuenta = input("Ingrese nombre de la cuenta (ej: ahorros, corriente): ")
+    if cuenta not in clientes[cc]["cuentas"]:
+        clientes[cc]["cuentas"][cuenta] = 0.0
+        print(f"Cuenta '{cuenta}' creada.")
 
-    clientes[cc]["saldo"] += monto
-    print(f"Depósito de {monto} realizado exitosamente. Nuevo saldo: {clientes[cc]['saldo']}")
-          
+    monto = float(input("Ingrese monto a depositar: "))
+    clientes[cc]["cuentas"][cuenta] += monto
+    print(f"Depósito de {monto} realizado exitosamente. Nuevo saldo en '{cuenta}': {clientes[cc]['cuentas'][cuenta]}")
+
 def retirar_dinero():
     cc = input("Ingrese número de cédula del cliente: ")
     if cc not in clientes:
         print("Cliente no encontrado.")
         return
 
+    cuenta = input("Ingrese nombre de la cuenta: ")
+    if cuenta not in clientes[cc]["cuentas"]:
+        print(f"El cliente no tiene la cuenta '{cuenta}'.")
+        return
+
     monto = float(input("Ingrese monto a retirar: "))
-    if monto > clientes[cc]["saldo"]:
+    if monto > clientes[cc]["cuentas"][cuenta]:
         print("Fondos insuficientes.")
         return
 
-    clientes[cc]["saldo"] -= monto
-    print(f"Retiro de {monto} realizado exitosamente. Saldo restante: {clientes[cc]['saldo']}")
+    clientes[cc]["cuentas"][cuenta] -= monto
+    print(f"Retiro de {monto} realizado exitosamente. Saldo restante en '{cuenta}': {clientes[cc]['cuentas'][cuenta]}")
 
 def main_Menu():
     while True:
-        print("Menu Principal: ")
-        print("Que accion desea realizar?")
+        print("\nMenu Principal: ")
         print("1. Crear cliente")
         print("2. Depositar dinero")
-        print("3. Solicitar credito")
+        print("3. Solicitar crédito")
         print("4. Retirar dinero")
-        print("5. Pago cuota credito")
+        print("5. Pago cuota crédito")
         print("6. Cancelar cuenta")
         print("7. Salir")
         opcion = input("Seleccione una opción: ")
@@ -94,15 +90,15 @@ def main_Menu():
             case "1":
                 crear_cliente()
             case "2":
-                depositar_dinero()    
-            case "3":   
+                depositar_dinero()
+            case "3":
                 pass
             case "4":
                 retirar_dinero()
             case "5":
                 pass
             case "6":
-                pass    
+                pass
             case "7":
                 print("Saliendo del programa...")
                 break
