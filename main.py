@@ -73,6 +73,44 @@ def retirar_dinero():
 
     clientes[cc]["cuentas"][cuenta] -= monto
     print(f"Retiro de {monto} realizado exitosamente. Saldo restante en '{cuenta}': {clientes[cc]['cuentas'][cuenta]}")
+def crear_credito(cc, tipo_credito):
+    monto=float(input("Ingrese monto del crédito: "))
+    plazo=int(input("Ingrese plazo en meses: "))
+    cuota_mensual = monto/ plazo
+    clientes[cc]["creditos"][f"credito_{len(clientes[cc]['creditos']) + 1}"] = {
+        "tipo": tipo_credito,
+        "monto": monto,
+        "plazo": plazo,
+        "cuota_mensual": cuota_mensual,
+        "pagado": 0.0
+    }
+    print(f"Crédito creado exitosamente. Cuota mensual: {cuota_mensual}")
+
+def solicitar_credito():
+    cc = input("Ingrese número de cédula del cliente: ")
+    if cc not in clientes:
+        print("Cliente no encontrado.")
+        return
+
+    tipo_credito = int(input("¿Qué tipo de crédito desea solicitar? (1. Libre inversión, 2. Vivienda, 3. Compra de auto): "))
+
+    # Verificar si ya tiene un crédito de ese tipo
+    creditos_cliente = clientes[cc]["creditos"]
+    for credito in creditos_cliente.values():
+        if credito["tipo"] == tipo_credito:
+            print("El cliente ya cuenta con un crédito de este tipo.")
+            return
+
+    # Si no lo tiene, lo creamos
+    match tipo_credito:
+        case 1:
+            crear_credito(cc, tipo_credito)
+        case 2:
+            crear_credito(cc, tipo_credito)
+        case 3:
+            crear_credito(cc, tipo_credito)
+        case _:
+            print("Tipo de crédito no válido.")
 
 def main_Menu():
     while True:
@@ -92,13 +130,13 @@ def main_Menu():
             case "2":
                 depositar_dinero()
             case "3":
-                pass
+                solicitar_credito()
             case "4":
                 retirar_dinero()
             case "5":
                 pass
             case "6":
-                pass
+                print(clientes)
             case "7":
                 print("Saliendo del programa...")
                 break
