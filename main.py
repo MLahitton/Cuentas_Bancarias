@@ -12,9 +12,12 @@ saldo=0.0
 clientes = {}
 """
 clientes = {}  # Diccionario vacío al inicio
-
+contador_id={}
 def crear_cliente():
     cc = input("Ingrese número de cédula: ")
+    if not cc.isdigit or len(cc)<6:
+        print("La cedula debe ser numerica y tener al menos 7 dígitos.")
+        return
     if cc in clientes:
         print("Cliente ya existe.")
         return  # Evitar sobreescribir
@@ -23,7 +26,13 @@ def crear_cliente():
     email = input("Email: ")
     edad = int(input("Edad: "))
     movil = input("Contacto móvil: ")
+    if not movil.isdigit() or len(movil) < 10:
+        print("El número de móvil debe ser numérico y tener al menos 10 dígitos.")
+        return
     fijo = input("Contacto fijo: ")
+    if not fijo.isdigit() or len(fijo) < 7:
+        print("El número de fijo debe ser numérico y tener al menos 7 dígitos.")
+        return
     pais = input("País: ")
     departamento = input("Departamento: ")
     ciudad = input("Ciudad: ")
@@ -39,7 +48,11 @@ def crear_cliente():
     }
 
     print(f"El cliente {nombre} creado exitosamente.")
-
+def generarId(cc, tipo_cuenta):
+    if cc not in contador_id:
+        contador_id[cc] = {"cuenta": 0, "credito": 0}
+        contador_id[cc]["cuenta"] += 1
+        return f'{tipo_cuenta}_{cc}_{contador_id[cc]["cuenta"]}'
 def depositar_dinero():
     cc = input("Ingrese número de cédula del cliente: ")
     if cc not in clientes:
@@ -47,13 +60,25 @@ def depositar_dinero():
         return
 
     cuenta = input("Ingrese nombre de la cuenta (ej: ahorros, corriente): ")
-    if cuenta not in clientes[cc]["cuentas"]:
-        clientes[cc]["cuentas"][cuenta] = 0.0
-        print(f"Cuenta '{cuenta}' creada.")
 
+    cuentas_existentes = [nombre for nombre in clientes[cc]["cuentas"] if nombre.startswith(cuenta)]
+    if cuentas_existentes:
+        # Usar la última cuenta creada con ese nombre
+        cuenta_nombre = cuentas_existentes[-1]
+    else:
+        cuenta_nombre = f"{cuenta}_{len(clientes[cc]['cuentas']) + 1}"
+        cuenta_id = generarId("cuenta", cc)
+        nombreCuenta = f"{cuenta}_{len(clientes[cc]['cuentas']) + 1}"
+        clientes[cc]["cuentas"][nombreCuenta] = {
+            "id": cuenta_id,
+            "saldo": 0.0,
+            "historial": [f"Cuenta creada con ID {cuenta_id}"]
+        }
+        print(f"Cuenta '{nombreCuenta}' creada con ID {cuenta_id}.")
     monto = float(input("Ingrese monto a depositar: "))
-    clientes[cc]["cuentas"][cuenta] += monto
-    print(f"Depósito de {monto} realizado exitosamente. Nuevo saldo en '{cuenta}': {clientes[cc]['cuentas'][cuenta]}")
+    clientes[cc]["cuentas"][nombreCuenta]["saldo"] += monto
+    clientes[cc]["cuentas"][nombreCuenta]["historial"].append(f"Depósito de {monto}")
+    print(f"Depósito de {monto} realizado exitosamente. Nuevo saldo en '{cuenta}': {clientes[cc]["cuentas"][cuenta_nombre]['saldo']}")
 
 def retirar_dinero():
     cc = input("Ingrese número de cédula del cliente: ")
@@ -86,6 +111,40 @@ def crear_credito(cc, tipo_credito):
     }
     print(f"Crédito creado exitosamente. Cuota mensual: {cuota_mensual}")
 
+def pagar_credito():
+    cc = input("Ingrese número de cédula del cliente: ")
+    if cc not in clientes:
+        print("Cliente no encontrado.")
+        return
+    
+    creditopago=int(input("Ingrese el credito al cual desea realizar un abono(1. Libre inversión, 2. Vivienda, 3. Compra de auto): "))
+    pago=float(input("Ingrese el monto que desea pagar: "))
+    credito_Apagar=clientes[cc]["creditos"]
+    for credito in credito_Apagar.values():
+        if credito["tipo"]==creditopago:
+            if pago > credito["monto"] - credito["pagado"]:
+                print("El monto a pagar excede el saldo del crédito.")
+                return
+            credito["pagado"] += pago
+            print(f"Pago de {pago} realizado exitosamente. Saldo restante: {credito['monto'] - credito['pagado']}")
+            return
+        
+def cancelar_cuenta():
+    cc = input("Ingrese número de cédula del cliente: ")
+    if cc not in clientes:
+        print("Cliente no encontrado.")
+        return
+
+    clientes[cc]["cuentas"].clear()
+    clientes[cc]["creditos"].clear()
+    print(f"Cuenta del cliente {clientes[cc]['nombre']} cancelada exitosamente.")
+    del clientes[cc]  
+            
+            
+
+    
+
+
 def solicitar_credito():
     cc = input("Ingrese número de cédula del cliente: ")
     if cc not in clientes:
@@ -94,14 +153,12 @@ def solicitar_credito():
 
     tipo_credito = int(input("¿Qué tipo de crédito desea solicitar? (1. Libre inversión, 2. Vivienda, 3. Compra de auto): "))
 
-    # Verificar si ya tiene un crédito de ese tipo
     creditos_cliente = clientes[cc]["creditos"]
     for credito in creditos_cliente.values():
         if credito["tipo"] == tipo_credito:
             print("El cliente ya cuenta con un crédito de este tipo.")
             return
 
-    # Si no lo tiene, lo creamos
     match tipo_credito:
         case 1:
             crear_credito(cc, tipo_credito)
@@ -134,11 +191,18 @@ def main_Menu():
             case "4":
                 retirar_dinero()
             case "5":
-                pass
+                pagar_credito()
             case "6":
                 print(clientes)
             case "7":
                 print("Saliendo del programa...")
                 break
+            case "8":
+                cancelar_cuenta()
+            case "9":
+                print("Clientes registrados:")
+                for cc, datos in clientes.items():
+                    print(f"Cédula: {cc}, Nombre: {datos['nombre']}, Email: {datos['email']}, Edad: {datos['edad']}, Cuentas: {datos['cuentas']}, Créditos: {datos['creditos']}")
+
 
 main_Menu()
