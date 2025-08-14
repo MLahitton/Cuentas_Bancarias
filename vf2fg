@@ -1,7 +1,0 @@
-tamaño = int(input("Ingrese el tamaño de su pene"))
-if tamaño < 10:
-    print("Tu pene es pequeño")
-elif tamaño < 20:
-    print("Tu pene es mediano")
-else:
-    print("Tu pene es grande")
